@@ -17,77 +17,56 @@ class App extends Component {
 
  
   */
-  state = {
-    greeting : 'Hello!',
-    
-  }
+  state = {}
+
   componentDidMount(){
-    
-    //00 시간 후에 00작업을 수행시킨다.
-    
-    setTimeout(()=>{
-      this.setState({
-        movies   : [ 
-          {
-            title   : 'Hunger Game'
-            ,poster : 'https://www.ecranlarge.com/uploads/image/000/628/original-665129-163.jpg' 
-          },
-          {
-            title   : 'Noteboox'
-            ,poster : 'https://ae01.alicdn.com/kf/HTB1cSQMIpXXXXblXXXXq6xXFXXX7/-.jpg_640x640.jpg' 
-          },
-          {
-            title   : 'Inception'
-            ,poster : 'http://image.cine21.com/cine21/poster/2010/0614/M0010010_inception_poster_3.jpg' 
-          },
-          {
-            title   : 'The Good Place'
-            ,poster : 'https://images.justwatch.com/poster/11649724/s592/deo-gus-peulreiseu' 
-          }, 
-        ]
-        /*movies : [
-          //이전 영화 리스트를 그대로 두고, 추가
-          //위치를 아래로 옮기면 맨 위에 새로 추가됨
-          ...this.state.movies,
-          {
-            title : "MISS SLOANE"
-            ,poster : "https://t1.daumcdn.net/thumb/R1280x0/?fname=http://t1.daumcdn.net/brunch/service/user/vf1/image/VVA6V8ttTEwUoUNqIcDg8D8HGX4.jpg"
-          }
-        ]*/
-      })
-    },5000)
-    
-    /*setTimeout(function(){
-      console.log('hello')
-    },1000)
-    */
+   this._getMovies();
   }
 
   _renderMovies = () => {
     //movies라는 variable에 데이터를 저장
-    const movies = this.state.movies.map((movie, index) => {
-      return <Movie title={movie.title} poster={movie.poster} key={index}/>
+    //movies를 출력할 때 정렬된 항목(array)를 보여준다. '[<Movie />, <Movie props />]'
+    const movies = this.state.movies.map(movie => {
+      return <Movie 
+                title     = {movie.title_english}    
+                alt       = {movie.title_english} 
+                poster    = {movie.large_cover_image} 
+                key       = {movie.id} 
+                genres    = {movie.genres}
+                synopsis  = {movie.synopsis}
+            />
     })
     return movies
   }
 
+  // async : 순서와 상관없이 작업 진행
+ _getMovies =  async () => {
+    // async 를 쓰지않으면 await이 작동하지 않음
+    const movies = await this._callApi();
+    this.setState({
+      movies // : movies
+    })
+  }
+
+  _callApi = () => {
+    return fetch('https://yts.am/api/v2/list_movies.json?sort_by=download_count')
+    .then(response => response.json())
+    .then(json => json.data.movies)
+    .catch(err => console.log(err))
+    // '=>' : arrow function, return의 의미
+  }
+
   render() {
+    const { movies } = this.state;
     return (
-      /*<div className="App">
-        {this.state.movies.map((movie, index) => {
-          return <Movie title={movie.title} poster={movie.poster} key={index}/>
-        })       
-        }       
-       </div>
-      */ 
-     <div className = "App">
-      {this.state.movies ? this._renderMovies() : 'Loading'}    
-     </div>
+      <div className = {movies ? "App" : "App--loading"}>
+        {movies ? this._renderMovies() : 'Loading'}
+      </div>   
     //데이터가 있으면 출력, 없으면 로딩중 
     // * '_'를 쓰는 이유 : 리액트 자체 기능과 구분
     // '= () =>' : 최신 자바스크립트
-    )
-  } 
+    );
+  }  
 }
 // 컴포넌트 생성 > 렌더 > 리턴 > html 내용 > 브라우저
 
